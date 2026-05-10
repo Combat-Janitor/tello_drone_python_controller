@@ -30,6 +30,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 img = None
+last_photo_time = 0
 
 
 def get_keyboard_input(drone, img):
@@ -37,6 +38,7 @@ def get_keyboard_input(drone, img):
 
     Returns a list of [lr, fb, ud, yv] velocities.
     """
+    global last_photo_time
     # LEFT RIGHT, FRONT BACK, UP DOWN, YAW VELOCITY
     lr, fb, ud, yv = 0, 0, 0, 0
 
@@ -68,18 +70,18 @@ def get_keyboard_input(drone, img):
     if kp.get_key("q"):
         logger.info("Landing drone...")
         drone.land()
-        time.sleep(3)
     if kp.get_key("e"):
         logger.info("Taking off...")
         drone.takeoff()
 
-    # Screen capture images from camera
+    # Screen capture images from camera (with 0.3s cooldown)
     if kp.get_key("z"):
-        os.makedirs(SCREENSHOT_DIR, exist_ok=True)
-        filepath = f"{SCREENSHOT_DIR}/{time.time()}.jpg"
-        cv2.imwrite(filepath, img)
-        logger.info("Screenshot saved: %s", filepath)
-        time.sleep(0.3)
+        if time.time() - last_photo_time > 0.3:
+            os.makedirs(SCREENSHOT_DIR, exist_ok=True)
+            filepath = f"{SCREENSHOT_DIR}/{time.time()}.jpg"
+            cv2.imwrite(filepath, img)
+            logger.info("Screenshot saved: %s", filepath)
+            last_photo_time = time.time()
 
     # Return values that are given
     return [lr, fb, ud, yv]
@@ -128,11 +130,14 @@ def main():
     except Exception as e:
         logger.error("Unexpected error: %s", e)
     finally:
-        logger.info("Landing drone and cleaning up...")
-        try:
-            drone.land()
-        except Exception:
-            pass
+        logger.info("Cleaning up...")
+        # Only attempt to land if the drone is actually flying
+        if getattr(drone, "is_flying", False):
+            logger.info("Drone is still flying, landing now...")
+            try:
+                drone.land()
+            except Exception:
+                pass
         try:
             drone.streamoff()
         except Exception:

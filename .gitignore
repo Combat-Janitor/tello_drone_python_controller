@@ -17,3 +17,4 @@ venv/
 # OS Hidden Files (Prevents conflicts between Windows and Mac)
 .DS_Store
 Thumbs.db
+*.jpg

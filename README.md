@@ -6,8 +6,8 @@ A Python-based application to control a DJI Tello drone using your PC keyboard. 
 
 - **Full Flight Control:** Use intuitive keyboard bindings to control altitude, translation, and rotation.
 - **Live Video Feed:** Streams the drone's 720p camera feed directly to your PC using OpenCV.
-- **Photo Capture:** Snap photos mid-flight with a single keystroke (directories are auto-created).
-- **Graceful Shutdown:** Automatically lands the drone and safely closes video streams if the window is closed or interrupted.
+- **Photo Capture:** Snap photos mid-flight with a single keystroke (non-blocking 0.3s cooldown ensures controls never freeze).
+- **Smart Graceful Shutdown:** Automatically lands the drone only if it's currently flying, and safely closes video streams on exit.
 - **Console Logging:** Built-in logging provides real-time feedback on battery life, flight status, and errors.
 - **Modular Design:** PyGame keyboard logic is separated from the main flight logic for easier maintenance.
 
