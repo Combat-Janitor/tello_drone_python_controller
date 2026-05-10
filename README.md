@@ -1,4 +1,4 @@
-# Tello Drone Controller
+# Tello Drone Flight Controller
 
 A Python-based application to control a DJI Tello drone using your PC keyboard. This project allows you to fly the drone, view its live camera feed, and capture photos using simple keyboard inputs.
 
