@@ -1,4 +1,4 @@
-# Tello Drone Flight Controller
+# Tello Drone Controller
 
 A Python-based application to control a DJI Tello drone using your PC keyboard. This project allows you to fly the drone, view its live camera feed, and capture photos using simple keyboard inputs.
 
@@ -6,7 +6,9 @@ A Python-based application to control a DJI Tello drone using your PC keyboard. 
 
 - **Full Flight Control:** Use intuitive keyboard bindings to control altitude, translation, and rotation.
 - **Live Video Feed:** Streams the drone's 720p camera feed directly to your PC using OpenCV.
-- **Photo Capture:** Snap photos mid-flight with a single keystroke.
+- **Photo Capture:** Snap photos mid-flight with a single keystroke (directories are auto-created).
+- **Graceful Shutdown:** Automatically lands the drone and safely closes video streams if the window is closed or interrupted.
+- **Console Logging:** Built-in logging provides real-time feedback on battery life, flight status, and errors.
 - **Modular Design:** PyGame keyboard logic is separated from the main flight logic for easier maintenance.
 
 ## Requirements
@@ -63,8 +65,6 @@ python MainTello.py
 | **LEFT / RIGHT** | Fly Left / Fly Right |
 | **A / D** | Rotate (Yaw) Left / Rotate (Yaw) Right |
 | **Z** | Capture Photo (saves to `tellopy/Resources/Images/`) |
-
-> **Note:** If taking photos, ensure that the folder structure `tellopy/Resources/Images/` exists relative to where you run the script, or modify the path in `MainTello.py`.
 
 ## Project Structure
 
