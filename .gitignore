@@ -1,0 +1,19 @@
+# Python Bytecode
+__pycache__/
+*.py[cod]
+
+# Virtual Environments
+.venv/
+venv/
+
+# Secrets and Environment Variables
+.env
+*.pem
+
+# IDEs
+.vscode/
+.agent/
+
+# OS Hidden Files (Prevents conflicts between Windows and Mac)
+.DS_Store
+Thumbs.db
