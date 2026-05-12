@@ -59,7 +59,7 @@ python MainTello.py
 | Key | Action |
 | :--- | :--- |
 | **E** | Takeoff |
-| **Q** | Land |
+| **Q** | Land (press again after landing to exit the program) |
 | **W / S** | Up / Down |
 | **UP / DOWN** | Forward / Backward |
 | **LEFT / RIGHT** | Fly Left / Fly Right |
