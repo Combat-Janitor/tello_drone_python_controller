@@ -5,10 +5,10 @@
 import logging
 import os
 import time
-
 import cv2
+import pygame
 from djitellopy import tello
-
+import ControllerTelloModule as cp
 import KeyboardTelloModule as kp
 
 # ==========================================
@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 
 img = None
 last_photo_time = 0
+use_controller = False
 
 
 def get_keyboard_input(drone, img):
@@ -87,11 +88,54 @@ def get_keyboard_input(drone, img):
     return [lr, fb, ud, yv]
 
 
+def get_controller_input(drone, img):
+    """Read controller state and return RC control values.
+
+    Analog sticks provide proportional speed control (float -1.0 to 1.0
+    multiplied by the speed constant), unlike the binary keyboard input.
+
+    Returns a list of [lr, fb, ud, yv] velocities.
+    """
+    global last_photo_time
+
+    # Analog sticks → proportional movement
+    lr = int(cp.get_axis("left_x") * SPEED)
+    fb = int(-cp.get_axis("left_y") * MOVE_SPEED)  # Y-axis is inverted
+    yv = int(cp.get_axis("right_x") * ROTATION_SPEED)
+    ud = int(-cp.get_axis("right_y") * LIFT_SPEED)  # Y-axis is inverted
+
+    # Buttons → discrete actions
+    if cp.get_button("cross"):
+        logger.info("Landing drone...")
+        drone.land()
+    if cp.get_button("triangle"):
+        logger.info("Taking off...")
+        drone.takeoff()
+
+    # Screenshot (with 0.3s cooldown)
+    if cp.get_button("circle"):
+        if time.time() - last_photo_time > 0.3:
+            os.makedirs(SCREENSHOT_DIR, exist_ok=True)
+            filepath = f"{SCREENSHOT_DIR}/{time.time()}.jpg"
+            cv2.imwrite(filepath, img)
+            logger.info("Screenshot saved: %s", filepath)
+            last_photo_time = time.time()
+
+    return [lr, fb, ud, yv]
+
+
 def main():
-    global img
+    global img, use_controller
 
     # Initialize Keyboard Input
     kp.init()
+
+    # Attempt to initialize controller (falls back to keyboard if not found)
+    use_controller = cp.init()
+    if use_controller:
+        logger.info("Controller mode active — using analog sticks.")
+    else:
+        logger.info("Keyboard mode active.")
 
     # Connect to the Tello Drone
     drone = tello.Tello()
@@ -104,13 +148,16 @@ def main():
         drone.streamon()
 
         while True:
-            # Get return values and store them within variables
-            key_values = get_keyboard_input(drone, img)
-
-            # Check for window close
+            # Pump the event queue first so input state is fresh
             if not kp.update():
                 logger.info("Window closed, shutting down...")
                 break
+
+            # Get return values from active input method
+            if use_controller:
+                key_values = get_controller_input(drone, img)
+            else:
+                key_values = get_keyboard_input(drone, img)
 
             # Control the Tello drone
             drone.send_rc_control(
@@ -121,9 +168,15 @@ def main():
             img = drone.get_frame_read().frame
             img = cv2.resize(img, (1080, 720))
 
-            # Show the frames on PC display
-            cv2.imshow("DroneCapture", img)
-            cv2.waitKey(1)
+            # Render the camera feed in the pygame window
+            # Convert OpenCV BGR frame to RGB for pygame
+            frame_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            frame_surface = pygame.image.frombuffer(
+                frame_rgb.tobytes(), frame_rgb.shape[1::-1], "RGB"
+            )
+            screen = pygame.display.get_surface()
+            screen.blit(frame_surface, (0, 0))
+            pygame.display.flip()
 
     except KeyboardInterrupt:
         logger.info("Interrupted by user, shutting down...")
@@ -142,7 +195,7 @@ def main():
             drone.streamoff()
         except Exception:
             pass
-        cv2.destroyAllWindows()
+        cp.cleanup()
         kp.cleanup()
 
 

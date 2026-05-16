@@ -7,7 +7,8 @@ import pygame
 
 def init():
     pygame.init()
-    pygame.display.set_mode((400, 400))
+    pygame.display.set_mode((1080, 720))
+    pygame.display.set_caption("Tello Drone Controller")
 
 
 def get_key(key_name):
@@ -20,11 +21,10 @@ def get_key(key_name):
 
 
 def update():
-    # Process events and update display once per frame
+    # Process events so input state stays fresh
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             return False
-    pygame.display.update()
     return True
 
 

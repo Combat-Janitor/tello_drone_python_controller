@@ -1,6 +1,6 @@
 # Tello Drone Controller
 
-A Python-based application to control a DJI Tello drone using your PC keyboard. This project allows you to fly the drone, view its live camera feed, and capture photos using simple keyboard inputs.
+A Python-based application to control a DJI Tello drone using your PC keyboard or a PS5 DualSense controller. This project allows you to fly the drone, view its live camera feed, and capture photos using simple inputs.
 
 ## Features
 
@@ -10,6 +10,7 @@ A Python-based application to control a DJI Tello drone using your PC keyboard. 
 - **Smart Graceful Shutdown:** Automatically lands the drone only if it's currently flying, and safely closes video streams on exit.
 - **Console Logging:** Built-in logging provides real-time feedback on battery life, flight status, and errors.
 - **Modular Design:** PyGame keyboard logic is separated from the main flight logic for easier maintenance.
+- **PS5 Controller Support:** Plug in a DualSense controller for proportional analog stick control with automatic detection and keyboard fallback.
 
 ## Requirements
 
@@ -47,12 +48,12 @@ python3 -m venv venv
 python MainTello.py
 ```
 
-> **macOS Note:** You may see a wall of `objc` warnings about duplicate SDL2 classes. These are harmless warnings caused by both PyGame and OpenCV bundling their own copies of SDL2. They will not affect functionality. To suppress them, run with:
+> **macOS Note:** You may see `objc` warnings about duplicate SDL2 classes in the terminal. These are cosmetic warnings from OpenCV's bundled SDL2 and will not affect functionality. To suppress them, run with:
 > ```bash
-> OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES python MainTello.py 2>/dev/null
+> python MainTello.py 2>/dev/null
 > ```
 
-4. A PyGame window and an OpenCV video stream window will appear. **Make sure the PyGame window is actively selected/in-focus** so it can register your keystrokes.
+4. A single PyGame window will appear showing the drone's camera feed. **Make sure this window is in focus** so it can register your inputs.
 
 ## Flight Controls
 
@@ -66,7 +67,24 @@ python MainTello.py
 | **A / D** | Rotate (Yaw) Left / Rotate (Yaw) Right |
 | **Z** | Capture Photo (saves to `tellopy/Resources/Images/`) |
 
+## Controller Support (PS5 DualSense)
+
+If a PS5 DualSense controller is connected (USB or Bluetooth) before launching the app, it will be auto-detected and used instead of keyboard input. If no controller is found, the app falls back to keyboard controls.
+
+**Analog sticks provide proportional speed control** — gentle tilts produce slow movement, full tilts produce maximum speed. This is a significant upgrade over the binary on/off keyboard input.
+
+| Input | Action |
+| :--- | :--- |
+| **Left Stick** | Move (Left/Right + Forward/Back) |
+| **Right Stick** | Altitude (Up/Down) + Yaw Rotation |
+| **△ Triangle** | Takeoff |
+| **✕ Cross** | Land (press again after landing to exit) |
+| **○ Circle** | Capture Photo |
+
+> **Note:** Button mappings are configured per-OS via `platform.system()` in `ControllerTelloModule.py`. If your controller's buttons don't match, update the `MAPPINGS` dictionary in that file.
+
 ## Project Structure
 
-- `MainTello.py`: The core script that handles the connection to the drone, routes keyboard inputs to movement commands, and manages the OpenCV video stream.
+- `MainTello.py`: The core script that handles the connection to the drone, routes input to movement commands, and manages the OpenCV video stream.
 - `KeyboardTelloModule.py`: A helper module that initializes a PyGame window and handles all keyboard event polling safely.
+- `ControllerTelloModule.py`: An input module for PS5 DualSense controllers with OS-agnostic button/axis mapping and analog dead zone filtering.
