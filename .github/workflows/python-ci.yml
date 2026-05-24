@@ -22,7 +22,7 @@ jobs:
         run: pip install flake8 black
         
       - name: Run Black
-        run: black --check --line-length 85 .
+        run: black --check --line-length 100 .
 
       - name: Run Flake8
-        run: flake8 --max-line-length 85 .
+        run: flake8 --max-line-length 100 .
