@@ -208,9 +208,7 @@ def main():
             # over any video content
             bg_rect = bat_text.get_rect()
             bg_rect.topleft = (15, 12)  # Position: top-left corner
-            bg_surface = pygame.Surface(
-                (bg_rect.width + 16, bg_rect.height + 8)
-            )
+            bg_surface = pygame.Surface((bg_rect.width + 16, bg_rect.height + 8))
             bg_surface.set_alpha(140)  # Semi-transparent
             bg_surface.fill((0, 0, 0))  # Black background
             screen.blit(bg_surface, (bg_rect.x - 8, bg_rect.y - 4))
