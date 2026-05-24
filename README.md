@@ -8,8 +8,9 @@ A Python-based application to control a DJI Tello drone using your PC keyboard o
 - **Live Video Feed:** Streams the drone's 720p camera feed directly to your PC using OpenCV.
 - **Photo Capture:** Snap photos mid-flight with a single keystroke (non-blocking 0.3s cooldown ensures controls never freeze).
 - **Smart Graceful Shutdown:** Automatically lands the drone only if it's currently flying, and safely closes video streams on exit.
+- **Battery Indicator:** A color-coded battery overlay on the video feed — green (>50%), yellow (20–50%), red (<20%) — polled every 5 seconds.
 - **Console Logging:** Built-in logging provides real-time feedback on battery life, flight status, and errors.
-- **Modular Design:** PyGame keyboard logic is separated from the main flight logic for easier maintenance.
+- **Modular Design:** Input modules are organized in a `modules/` package, separated from the main flight logic for easier maintenance.
 - **PS5 Controller Support:** Plug in a DualSense controller for proportional analog stick control with automatic detection and keyboard fallback.
 
 ## Requirements
@@ -81,10 +82,19 @@ If a PS5 DualSense controller is connected (USB or Bluetooth) before launching t
 | **✕ Cross** | Land (press again after landing to exit) |
 | **○ Circle** | Capture Photo |
 
-> **Note:** Button mappings are configured per-OS via `platform.system()` in `ControllerTelloModule.py`. If your controller's buttons don't match, update the `MAPPINGS` dictionary in that file.
+> **Note:** Button mappings are configured per-OS via `platform.system()` in `modules/ControllerTelloModule.py`. If your controller's buttons don't match, update the `MAPPINGS` dictionary in that file.
+
+## Battery Indicator
+
+The battery level is displayed in the top-left corner of the video feed. A few things to know:
+
+- **A "full" battery typically shows 90–93%**, not 100%. This is normal — the charger stops slightly below peak voltage to protect battery longevity, and some charge is used during power-on and WiFi connection before the indicator appears.
+- **The percentage drops quickly at first (90→60%)**, then levels off for most of your flight time. This is standard LiPo battery discharge behavior, not a bug.
+- The Tello will auto-land around 10% to protect the battery.
 
 ## Project Structure
 
-- `MainTello.py`: The core script that handles the connection to the drone, routes input to movement commands, and manages the OpenCV video stream.
-- `KeyboardTelloModule.py`: A helper module that initializes a PyGame window and handles all keyboard event polling safely.
-- `ControllerTelloModule.py`: An input module for PS5 DualSense controllers with OS-agnostic button/axis mapping and analog dead zone filtering.
+- `MainTello.py`: The core script that handles the connection to the drone, routes input to movement commands, and manages the video stream and battery overlay.
+- `modules/`: Input module package.
+  - `KeyboardTelloModule.py`: Initializes the PyGame window and handles keyboard event polling.
+  - `ControllerTelloModule.py`: PS5 DualSense controller support with OS-agnostic button/axis mapping and analog dead zone filtering.
