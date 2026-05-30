@@ -21,20 +21,24 @@ You will need Python 3 installed on your system. **Note:** This project cannot e
 
 1. **Install System Dependencies (macOS only):**
 If you are on a Mac, you may need to install SDL2 dependencies before installing the Python packages, otherwise PyGame will fail to install:
+
 ```bash
 brew install sdl2 sdl2_image sdl2_ttf sdl2_mixer
 ```
 
-2. **Create a virtual environment (from the root of your project):**
+1. **Create a virtual environment (from the root of your project):**
+
 ```bash
 python3 -m venv venv
 ```
 
-3. **Activate the virtual environment:**
+1. **Activate the virtual environment:**
+
 - On macOS/Linux: `source venv/bin/activate`
 - On Windows: `venv\Scripts\activate`
 
-4. **Install the Python dependencies:**
+1. **Install the Python dependencies:**
+
    ```bash
    pip install -r requirements.txt
    ```
@@ -50,11 +54,12 @@ python MainTello.py
 ```
 
 > **macOS Note:** You may see `objc` warnings about duplicate SDL2 classes in the terminal. These are cosmetic warnings from OpenCV's bundled SDL2 and will not affect functionality. To suppress them, run with:
+>
 > ```bash
 > python MainTello.py 2>/dev/null
 > ```
 
-4. A single PyGame window will appear showing the drone's camera feed. **Make sure this window is in focus** so it can register your inputs.
+1. A single PyGame window will appear showing the drone's camera feed. **Make sure this window is in focus** so it can register your inputs.
 
 ## Flight Controls
 
@@ -86,15 +91,22 @@ If a PS5 DualSense controller is connected (USB or Bluetooth) before launching t
 
 ## Battery Indicator
 
-The battery level is displayed in the top-left corner of the video feed. A few things to know:
+The battery level is displayed in the top-left corner of the video feed. The raw battery percentage from the drone is **remapped to a usable display range** so the numbers are more intuitive:
 
-- **A "full" battery typically shows 90–93%**, not 100%. This is normal — the charger stops slightly below peak voltage to protect battery longevity, and some charge is used during power-on and WiFi connection before the indicator appears.
-- **The percentage drops quickly at first (90→60%)**, then levels off for most of your flight time. This is standard LiPo battery discharge behavior, not a bug.
-- The Tello will auto-land around 10% to protect the battery.
+| Raw Battery (from drone) | Display | Behavior |
+| :--- | :--- | :--- |
+| ≥90% | **100%** | Green — full charge |
+| 90% → 10% | **100% → 0%** | Green / Yellow / Red as it drains |
+| ≤10% | **Blinking red** (shows raw %) | Danger zone — drone will attempt to auto-land |
+
+**Why remap?** A freshly charged Tello battery typically reports 90–93%, never a true 100%. The display remaps this so a full charge reads as 100% and drains smoothly to 0%. Below 10%, the indicator switches to a blinking red warning showing the actual raw value — the drone is trying to auto-land at this point, but you can still force it to fly.
+
+**Note:** The battery percentage drops quickly at first (100→60% displayed), then levels off for most of your flight time. This is standard LiPo battery discharge behavior, not a bug.
 
 ## Project Structure
 
-- `MainTello.py`: The core script that handles the connection to the drone, routes input to movement commands, and manages the video stream and battery overlay.
-- `modules/`: Input module package.
+- `MainTello.py`: The core script that connects to the drone, routes input to movement commands, and renders the video stream.
+- `modules/`: Module package.
+  - `BatteryTelloModule.py`: Battery indicator overlay with remapped display range and blinking danger zone alert.
   - `KeyboardTelloModule.py`: Initializes the PyGame window and handles keyboard event polling.
   - `ControllerTelloModule.py`: PS5 DualSense controller support with OS-agnostic button/axis mapping and analog dead zone filtering.

@@ -8,6 +8,7 @@ import time
 import cv2
 import pygame
 from djitellopy import tello
+from modules import BatteryTelloModule as bp
 from modules import ControllerTelloModule as cp
 from modules import KeyboardTelloModule as kp
 
@@ -19,8 +20,6 @@ LIFT_SPEED = 80
 MOVE_SPEED = 85
 ROTATION_SPEED = 100
 SCREENSHOT_DIR = "tellopy/Resources/Images"
-# Seconds between battery queries (UDP round-trip)
-BATTERY_POLL_INTERVAL = 5
 
 # ==========================================
 # Logging Configuration
@@ -149,12 +148,8 @@ def main():
         # Start the drone camera display stream
         drone.streamon()
 
-        # --- Battery indicator setup ---
-        # Create the font once (expensive to recreate)
-        battery_font = pygame.font.SysFont("Arial", 28, bold=True)
-        # Get initial value before the first interval
-        battery_level = drone.get_battery()
-        last_battery_time = time.time()
+        # Initialize the battery overlay
+        bp.init(drone)
 
         while True:
             # Pump the event queue first so input state is fresh
@@ -186,33 +181,8 @@ def main():
             screen = pygame.display.get_surface()
             screen.blit(frame_surface, (0, 0))
 
-            # --- Battery indicator overlay ---
-            # Only query the drone every few seconds (it's a UDP round-trip)
-            if time.time() - last_battery_time > BATTERY_POLL_INTERVAL:
-                battery_level = drone.get_battery()
-                last_battery_time = time.time()
-
-            # Color: green=healthy, yellow=low, red=critical
-            if battery_level > 50:
-                bat_color = (0, 220, 80)  # Green
-            elif battery_level > 20:
-                bat_color = (255, 200, 0)  # Yellow
-            else:
-                bat_color = (255, 50, 50)  # Red
-
-            # Render the text surface (True = anti-aliased for smooth edges)
-            bat_text = battery_font.render(
-                f"Battery: {battery_level}%", True, bat_color
-            )
-            # Draw a small semi-transparent background so text is readable
-            # over any video content
-            bg_rect = bat_text.get_rect()
-            bg_rect.topleft = (15, 12)  # Position: top-left corner
-            bg_surface = pygame.Surface((bg_rect.width + 16, bg_rect.height + 8))
-            bg_surface.set_alpha(140)  # Semi-transparent
-            bg_surface.fill((0, 0, 0))  # Black background
-            screen.blit(bg_surface, (bg_rect.x - 8, bg_rect.y - 4))
-            screen.blit(bat_text, bg_rect)
+            # Draw the battery indicator overlay
+            bp.draw(screen, drone)
 
             pygame.display.flip()
 
