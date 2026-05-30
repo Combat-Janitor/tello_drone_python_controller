@@ -164,9 +164,7 @@ def main():
                 key_values = get_keyboard_input(drone, img)
 
             # Control the Tello drone
-            drone.send_rc_control(
-                key_values[0], key_values[1], key_values[2], key_values[3]
-            )
+            drone.send_rc_control(key_values[0], key_values[1], key_values[2], key_values[3])
 
             # Get Frames from the Tello drone camera
             img = drone.get_frame_read().frame
